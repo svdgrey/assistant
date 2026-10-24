@@ -122,6 +122,24 @@ class AddressBook(UserDict):
         if name in self.data:
             del self.data[name]
 
+    # Adjust February 29 birthdays to March 1 in non-leap years.
+    def adjust_leap_day_birthday(self, date_of_birth: date, year: int) -> date:
+        try:
+            return date_of_birth.replace(year=year)
+        except ValueError:
+            return date_of_birth.replace(year=year, month=3, day=1)
+
+    # Find the next birthday, adjusting February 29 if necessary.
+    def get_next_birthday(self, date_of_birth: date, today: date) -> date:
+        next_birthday = self.adjust_leap_day_birthday(date_of_birth, today.year)
+
+        if next_birthday < today:
+            next_birthday = self.adjust_leap_day_birthday(date_of_birth, today.year + 1)
+
+        return next_birthday
+
+    # Get birthdays within the next 7 days, including today.
+    # Move weekend congratulations to Monday.
     def get_upcoming_birthdays(self):
         today = date.today()
         upcoming_birthdays = []
@@ -130,30 +148,21 @@ class AddressBook(UserDict):
             if record.birthday is None:
                 continue
 
-            birthday = record.birthday.value.date()
-            try:
-                next_birthday = birthday.replace(year=today.year)
-            except ValueError:
-                next_birthday = birthday.replace(year=today.year, day=28)
+            date_of_birth = record.birthday.value.date()
+            next_birthday = self.get_next_birthday(date_of_birth, today)
 
-            if next_birthday < today:
-                try:
-                    next_birthday = birthday.replace(year=today.year + 1)
-                except ValueError:
-                    next_birthday = birthday.replace(year=today.year + 1, day=28)
-
-            # Calculate the next birthday date for the contact
             if 0 <= (next_birthday - today).days <= 7:
+                weekday = next_birthday.weekday()
+
+                # Move weekend birthdays to Monday
+                if weekday >= 5:
+                    next_birthday += timedelta(days=7 - weekday)
+
                 congratulation_date = next_birthday
-                # Adjust congratulation date to the next Monday if it falls on a weekend
-                if congratulation_date.weekday() == 5:
-                    congratulation_date += timedelta(days=2)
-                elif congratulation_date.weekday() == 6:
-                    congratulation_date += timedelta(days=1)
 
                 upcoming_birthdays.append({
                     "name": record.name.value,
-                    "congratulation_date": congratulation_date.strftime("%d.%m.%Y")
+                    "congratulation_date": congratulation_date.strftime("%d.%m.%Y"),
                 })
 
         return upcoming_birthdays

@@ -42,6 +42,14 @@ def create_commands(book, notes_book):
                             "min_args": 2,
                             "example": "add contact phone John 0984444444",
                         },
+                        "birthday": {
+                            "description": "Add a birthday to a contact",
+                            "handler": handlers.add_birthday,
+                            "data": book,
+                            "args": "<name> <DD.MM.YYYY>",
+                            "min_args": 2,
+                            "example": "add contact birthday John 15.05.1995",
+                        },
                     },
                 },
                 "note": {
@@ -205,6 +213,11 @@ def show_help(commands, path=""):
         available = commands.get("commands", commands)
         title = f"Available commands for '{path}':" if path else "Available commands:"
         lines = [title]
+
+        if "handler" in commands:
+            lines.append(f"  {path} {commands['args']}")
+            lines.append(f"  Example: {commands['example']}")
+            lines.append("")
 
         for name, command in available.items():
             lines.append(f"  {name:<12} - {command['description']}")

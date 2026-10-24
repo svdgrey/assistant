@@ -1,4 +1,4 @@
-# Personal Assistant Bot
+# Personal Assistant
 
 Personal Assistant is a console application written in Python. It helps users manage contacts, birthdays, and personal notes.
 

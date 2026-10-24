@@ -189,12 +189,12 @@ def create_commands(book, notes_book):
             },
         },
         "birthdays": {
-            "description": "Show upcoming birthdays",
+            "description": "Show birthdays within the specified number of days",
             "handler": handlers.birthdays,
             "data": book,
-            "args": "",
+            "args": "[days] (default: 7)",
             "min_args": 0,
-            "example": "birthdays",
+            "example": "birthdays 14",
         },
     }
 

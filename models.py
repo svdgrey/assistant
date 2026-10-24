@@ -140,7 +140,7 @@ class AddressBook(UserDict):
 
     # Get birthdays within the next 7 days, including today.
     # Move weekend congratulations to Monday.
-    def get_upcoming_birthdays(self):
+    def get_upcoming_birthdays(self, days=7):
         today = date.today()
         upcoming_birthdays = []
 
@@ -151,7 +151,7 @@ class AddressBook(UserDict):
             date_of_birth = record.birthday.value.date()
             next_birthday = self.get_next_birthday(date_of_birth, today)
 
-            if 0 <= (next_birthday - today).days <= 7:
+            if 0 <= (next_birthday - today).days <= days:
                 weekday = next_birthday.weekday()
 
                 # Move weekend birthdays to Monday

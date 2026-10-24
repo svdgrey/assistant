@@ -82,14 +82,26 @@ def show_birthday(args, book):
 
 @input_error
 def birthdays(args, book):
+    if len(args) > 1:
+        raise ValueError("Enter the number of days.")
+
+    days = 7
+
     if args:
-        raise ValueError("Invalid command.")
-    upcoming = book.get_upcoming_birthdays()
+        days = int(args[0])
+
+    if days < 0:
+        raise ValueError("Number of days cannot be negative.")
+
+    upcoming = book.get_upcoming_birthdays(days)
+
     if not upcoming:
         return "No upcoming birthdays."
+
     result = ""
     for contact in upcoming:
         result += f"{contact['name']}: {contact['congratulation_date']}\n"
+
     return result.strip()
 
 

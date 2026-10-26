@@ -1,15 +1,12 @@
-# Python cache
+venv/
+.venv-test/
+.venv-linux/
 __pycache__/
 *.pyc
-
-# Virtual environment
-.venv/
-venv/
-
-# User data and configuration
+*.egg-info/
+build/
+dist/
 *.pkl
 *.pkl.bak
+*.save
 config.json
-
-# IDE settings
-.vscode/

@@ -1,6 +1,7 @@
 # Storage module provides functions to save and load assistant data to and from a file
 # It handles both contacts and notes data
 
+
 import os
 import shutil
 import pickle
@@ -8,7 +9,7 @@ from pathlib import Path
 from models import AddressBook
 from notes import NotesBook
 from config import get_data_directory
-
+from datetime import datetime
 
 DATA_FILENAME = "assistant_data.pkl"
 BACKUP_SUFFIX = ".bak"
@@ -47,6 +48,23 @@ def create_backup(data_file, backup_file):
         except OSError:
             pass
 
+
+# Restore the main data file from a valid backup
+def restore_backup(data_file, backup_file):
+    result = read_data(backup_file)
+
+    temp_file = data_file.with_suffix(".tmp")
+
+    try:
+        shutil.copy2(backup_file, temp_file)
+        temp_file.replace(data_file)
+    finally:
+        try:
+            temp_file.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+    return result
 
 
 # Saves the address book and notes book to a file
@@ -120,8 +138,8 @@ def load_data():
         print(f"Failed to load main data: {error}")
 
     try:
-        result = read_data(backup_file)
-        print("Data loaded from backup.")
+        result = restore_backup(data_file, backup_file)
+        print("Main data file restored from backup.")
         return result
 
     except (OSError, pickle.UnpicklingError, EOFError,
@@ -131,3 +149,47 @@ def load_data():
             "Data files have not been changed."
         ) from error
 
+
+
+# Reset application data and preserve previous files
+def reset_data(book, notes_book):
+    data_file = get_data_file()
+    backup_file = get_backup_file()
+
+    # Generate a unique timestamp for archive files
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+
+    # Prepare archive file paths
+    archives = []
+
+    for file_path in (data_file, backup_file):
+        if file_path.exists():
+            archive_file = file_path.with_name(
+                f"{file_path.name}.{timestamp}.save"
+            )
+
+            if archive_file.exists():
+                raise FileExistsError(
+                    f"Archive already exists: {archive_file}"
+                )
+
+            archives.append((file_path, archive_file))
+
+    # Archive existing data files
+    for file_path, archive_file in archives:
+        shutil.copy2(file_path, archive_file)
+
+    # Create and save an empty database
+    empty_book = AddressBook()
+    empty_notes = NotesBook()
+
+    save_data(empty_book, empty_notes)
+
+    # Remove the old backup after successful saving
+    if backup_file.exists():
+        backup_file.unlink()
+
+    # Clear current objects only after successful saving
+    book.data.clear()
+    notes_book.notes.clear()
+    notes_book.next_id = 1

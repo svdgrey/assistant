@@ -219,6 +219,12 @@ def create_commands(book, notes_book):
             "min_args": 0,
             "example": "birthdays 14",
         },
+        "reset": {
+            "description": "Reset all contacts and notes",
+            "args": "",
+            "example": "reset",
+            "min_args": 0,
+        },
     }
 
 # Function to display help information for available commands

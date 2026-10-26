@@ -125,8 +125,14 @@ class Record:
 # AddressBook class represents the address book containing all contact records
 # It provides methods to add, find, delete records and get upcoming birthdays
 class AddressBook(UserDict):
+
+    # Add a new contact without overwriting an existing one
     def add_record(self, record):
+        if record.name.value in self.data:
+            raise ValueError("Contact already exists.")
+
         self.data[record.name.value] = record
+        
 
     def find(self, name):
         return self.data.get(name)

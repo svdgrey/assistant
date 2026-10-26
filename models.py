@@ -65,7 +65,11 @@ class Record:
         self.email = None
         self.address = None
 
+    # Add a phone number if it does not already exist
     def add_phone(self, phone):
+        if self.find_phone(phone):
+            raise ValueError("Phone number already exists.")
+
         self.phones.append(Phone(phone))
 
     def remove_phone(self, phone):
@@ -73,10 +77,19 @@ class Record:
         if found_phone:
             self.phones.remove(found_phone)
 
+    # Edit an existing phone number
     def edit_phone(self, old_phone, new_phone):
         found_phone = self.find_phone(old_phone)
+
         if not found_phone:
             raise ValueError("Phone number not found.")
+
+        if old_phone == new_phone:
+            raise ValueError("Old and new phone numbers are the same.")
+
+        if self.find_phone(new_phone):
+            raise ValueError("Phone number already exists.")
+
         new_phone = Phone(new_phone)
         found_phone.value = new_phone.value
 
@@ -98,7 +111,7 @@ class Record:
 
 
     def __str__(self):
-        phones = "; ".join(phone.value for phone in self.phones)
+        phones = ", ".join(phone.value for phone in self.phones)
         email = self.email.value if self.email else "Not specified"
         address = self.address.value if self.address else "Not specified"
 

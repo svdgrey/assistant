@@ -40,7 +40,7 @@ def show_phone(args, book):
     record = book.find(args[0])
     if record is None:
         raise KeyError("Contact not found.")
-    return "; ".join(phone.value for phone in record.phones)
+    return ", ".join(phone.value for phone in record.phones)
 
 
 # Handler function to show all contacts

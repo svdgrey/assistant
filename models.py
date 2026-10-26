@@ -110,18 +110,25 @@ class Record:
         self.address = Address(address)
 
 
+    # Return contact information as a string
     def __str__(self):
         phones = ", ".join(phone.value for phone in self.phones)
         email = self.email.value if self.email else "Not specified"
         address = self.address.value if self.address else "Not specified"
+        birthday = (
+            self.birthday.value.strftime("%d.%m.%Y")
+            if self.birthday else "Not specified"
+        )
 
         return (
             f"Contact name: {self.name.value}, "
             f"phones: {phones}, "
             f"email: {email}, "
-            f"address: {address}"
+            f"address: {address}, "
+            f"birthday: {birthday}"
         )
 
+    
 # AddressBook class represents the address book containing all contact records
 # It provides methods to add, find, delete records and get upcoming birthdays
 class AddressBook(UserDict):
@@ -132,7 +139,7 @@ class AddressBook(UserDict):
             raise ValueError("Contact already exists.")
 
         self.data[record.name.value] = record
-        
+
 
     def find(self, name):
         return self.data.get(name)
@@ -159,6 +166,7 @@ class AddressBook(UserDict):
 
     # Get birthdays within the next 7 days, including today.
     # Move weekend congratulations to Monday.
+    # Get upcoming birthdays within the specified number of days
     def get_upcoming_birthdays(self, days=7):
         today = date.today()
         upcoming_birthdays = []
@@ -168,19 +176,27 @@ class AddressBook(UserDict):
                 continue
 
             date_of_birth = record.birthday.value.date()
-            next_birthday = self.get_next_birthday(date_of_birth, today)
 
-            if 0 <= (next_birthday - today).days <= days:
-                weekday = next_birthday.weekday()
+            # Check birthdays from the previous weekend on Monday
+            if today.weekday() == 0:
+                start_date = today - timedelta(days=2)
+            else:
+                start_date = today
 
-                # Move weekend birthdays to Monday
-                if weekday >= 5:
-                    next_birthday += timedelta(days=7 - weekday)
+            next_birthday = self.get_next_birthday(date_of_birth, start_date)
 
+            # Move weekend birthdays to Monday
+            weekday = next_birthday.weekday()
+
+            if weekday >= 5:
+                congratulation_date = next_birthday + timedelta(days=7 - weekday)
+            else:
                 congratulation_date = next_birthday
 
+            if today <= congratulation_date <= today + timedelta(days=days):
                 upcoming_birthdays.append({
                     "name": record.name.value,
+                    "birthday": date_of_birth.strftime("%d.%m.%Y"),
                     "congratulation_date": congratulation_date.strftime("%d.%m.%Y"),
                 })
 

@@ -94,7 +94,11 @@ def birthdays(args, book):
 
     result = ""
     for contact in upcoming:
-        result += f"{contact['name']}: {contact['congratulation_date']}\n"
+        result += (
+            f"{contact['name']}: "
+            f"Birthday {contact['birthday']}, "
+            f"Congratulations {contact['congratulation_date']}\n"
+        )
 
     return result.strip()
 

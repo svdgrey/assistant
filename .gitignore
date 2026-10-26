@@ -1,0 +1,15 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environment
+.venv/
+venv/
+
+# User data and configuration
+*.pkl
+*.pkl.bak
+config.json
+
+# IDE settings
+.vscode/

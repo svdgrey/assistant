@@ -2,6 +2,8 @@
 # It includes command descriptions, argument requirements, and associated handlers
 
 import handlers
+import pickle
+from storage import save_data
 
 # Function to create the command structure for the assistant bot
 # It takes the address book and notes book as arguments and returns a dictionary of commands
@@ -13,6 +15,7 @@ def create_commands(book, notes_book):
                 "contact": {
                     "description": "Add a contact",
                     "handler": handlers.add_contact,
+                    "autosave": True,
                     "data": book,
                     "args": "<name> <phone>",
                     "min_args": 2,
@@ -21,6 +24,7 @@ def create_commands(book, notes_book):
                         "email": {
                             "description": "Add an email to a contact",
                             "handler": handlers.add_email,
+                            "autosave": True,
                             "data": book,
                             "args": "<name> <email>",
                             "min_args": 2,
@@ -29,6 +33,7 @@ def create_commands(book, notes_book):
                         "address": {
                             "description": "Add a contact address",
                             "handler": handlers.add_address,
+                            "autosave": True,
                             "data": book,
                             "args": "<name> <address>",
                             "min_args": 2,
@@ -37,6 +42,7 @@ def create_commands(book, notes_book):
                         "phone": {
                             "description": "Add a phone number",
                             "handler": handlers.add_contact,
+                            "autosave": True,
                             "data": book,
                             "args": "<name> <phone>",
                             "min_args": 2,
@@ -45,6 +51,7 @@ def create_commands(book, notes_book):
                         "birthday": {
                             "description": "Add a birthday to a contact",
                             "handler": handlers.add_birthday,
+                            "autosave": True,
                             "data": book,
                             "args": "<name> <DD.MM.YYYY>",
                             "min_args": 2,
@@ -55,6 +62,7 @@ def create_commands(book, notes_book):
                 "note": {
                     "description": "Create a new note",
                     "handler": handlers.add_note,
+                    "autosave": True,
                     "data": notes_book,
                     "args": "<text>",
                     "min_args": 1,
@@ -71,6 +79,7 @@ def create_commands(book, notes_book):
                         "phone": {
                             "description": "Change a phone number",
                             "handler": handlers.change_contact,
+                            "autosave": True,
                             "data": book,
                             "args": "<name> <old_phone> <new_phone>",
                             "min_args": 3,
@@ -79,6 +88,7 @@ def create_commands(book, notes_book):
                         "email": {
                             "description": "Change contact email",
                             "handler": handlers.change_email,
+                            "autosave": True,
                             "data": book,
                             "args": "<name> <new_email>",
                             "min_args": 2,
@@ -87,6 +97,7 @@ def create_commands(book, notes_book):
                         "address": {
                             "description": "Change contact address",
                             "handler": handlers.change_address,
+                            "autosave": True,
                             "data": book,
                             "args": "<name> <address>",
                             "min_args": 2,
@@ -95,6 +106,7 @@ def create_commands(book, notes_book):
                         "birthday": {
                             "description": "Change contact birthday",
                             "handler": handlers.add_birthday,
+                            "autosave": True,
                             "data": book,
                             "args": "<name> <DD.MM.YYYY>",
                             "min_args": 2,
@@ -105,6 +117,7 @@ def create_commands(book, notes_book):
                 "note": {
                     "description": "Edit an existing note",
                     "handler": handlers.edit_note,
+                    "autosave": True,
                     "data": notes_book,
                     "args": "<id> <new_text>",
                     "min_args": 2,
@@ -118,6 +131,7 @@ def create_commands(book, notes_book):
                 "contact": {
                     "description": "Delete a contact",
                     "handler": handlers.delete_contact,
+                    "autosave": True,
                     "data": book,
                     "args": "<name>",
                     "min_args": 1,
@@ -126,6 +140,7 @@ def create_commands(book, notes_book):
                 "note": {
                     "description": "Delete a note",
                     "handler": handlers.delete_note,
+                    "autosave": True,
                     "data": notes_book,
                     "args": "<id>",
                     "min_args": 1,
@@ -237,7 +252,12 @@ def find_command(words, commands):
     position = 0
 
     while position < len(words):
-        available = current.get("commands", current)
+        if "commands" in current:
+            available = current["commands"]
+        elif "description" not in current:
+            available = current
+        else:
+            break
 
         word = words[position].lower()
 
@@ -262,9 +282,31 @@ def get_help(words, commands):
     return show_help(current, path)
 
 
+# Execute a command and handle errors
+def call_handler(command, args, book, notes_book):
+    try:
+        result = command["handler"](args, command["data"])
+
+    except (KeyError, ValueError, IndexError) as error:
+        message = str(error)
+
+        if isinstance(error, KeyError):
+            message = message.strip("'")
+
+        return message or "Enter the argument for the command."
+
+    if command.get("autosave", False):
+        try:
+            save_data(book, notes_book)
+        except (OSError, pickle.PickleError) as error:
+            return f"{result}\nWarning: Data saving failed: {error}"
+
+    return result
+
+
 # Function to execute a command based on user input
 # It parses the input, finds the corresponding command, checks argument requirements, and calls the handler
-def execute_command(user_input, commands):
+def execute_command(user_input, commands, book, notes_book):
     words = user_input.split()
 
     if not words:
@@ -284,4 +326,4 @@ def execute_command(user_input, commands):
     if len(args) < current["min_args"]:
         return "Not enough arguments.\n" + show_help(current, path)
 
-    return current["handler"](args, current["data"])
+    return call_handler(current, args, book, notes_book)

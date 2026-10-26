@@ -1,7 +1,4 @@
 # Handlers module provides functions to handle various commands for the assistant bot
-# Each handler function is decorated with input_error to manage common input errors gracefully
-
-from decorators import input_error
 from models import Record
 
 # Function to parse user input into command and arguments
@@ -10,7 +7,6 @@ def parse_input(user_input):
     return cmd.lower(), *args
 
 # Handler function to add a new contact to the address book
-@input_error
 def add_contact(args, book):
     if len(args) != 2:
         raise ValueError("Give me name and phone please.")
@@ -27,7 +23,6 @@ def add_contact(args, book):
     return "Contact updated."
 
 # Handler function to change a contact's phone number
-@input_error
 def change_contact(args, book):
     if len(args) != 3:
         raise ValueError("Give me name, old phone and new phone please.")
@@ -39,7 +34,6 @@ def change_contact(args, book):
     return "Contact updated."
 
 # Handler function to show a contact's phone numbers
-@input_error
 def show_phone(args, book):
     if len(args) != 1:
         raise ValueError("Enter user name.")
@@ -50,7 +44,6 @@ def show_phone(args, book):
 
 
 # Handler function to show all contacts
-@input_error
 def show_all(args, book):
     if not book.data:
         return "No contacts found."
@@ -58,7 +51,6 @@ def show_all(args, book):
     return "\n".join(str(record) for record in book.data.values())
 
 # Handler function to add a birthday to a contact
-@input_error
 def add_birthday(args, book):
     if len(args) != 2:
         raise ValueError("Give me name and birthday please.")
@@ -71,7 +63,6 @@ def add_birthday(args, book):
 
 
 # Handler function to show a contact's birthday
-@input_error
 def show_birthday(args, book):
     if len(args) != 1:
         raise ValueError("Enter user name.")
@@ -84,7 +75,6 @@ def show_birthday(args, book):
 
 
 # Handler function to show upcoming birthdays within the specified number of days
-@input_error
 def birthdays(args, book):
     if len(args) > 1:
         raise ValueError("Enter the number of days.")
@@ -110,76 +100,70 @@ def birthdays(args, book):
 
 
 # Handler function to add an email to a contact
-@input_error
 def add_email(args, book):
     name, email = args
     record = book.find(name)
 
     if record is None:
-        return "Contact not found."
+        raise KeyError("Contact not found.")
 
     record.add_email(email)
     return "Email added."
 
 
 # Handler function to add an address to a contact
-@input_error
 def add_address(args, book):
     name = args[0]
     address = " ".join(args[1:])
     record = book.find(name)
 
     if record is None:
-        return "Contact not found."
+        raise KeyError("Contact not found.")
 
     if not address:
-        return "Enter an address."
+        raise ValueError("Enter an address.")
 
     record.add_address(address)
     return "Address added."
 
 # Handler function to delete a contact
-@input_error
 def delete_contact(args, book):
     name = args[0]
 
     if book.find(name) is None:
-        return "Contact not found."
+        raise KeyError("Contact not found.")
 
     book.delete(name)
     return "Contact deleted."
 
 
 # Handler function to change a contact's email
-@input_error
 def change_email(args, book):
     name, email = args
     record = book.find(name)
 
     if record is None:
-        return "Contact not found."
+        raise KeyError("Contact not found.")
 
     record.add_email(email)
     return "Email updated."
 
 # Handler function to change a contact's address
-@input_error
 def change_address(args, book):
     name = args[0]
     address = " ".join(args[1:])
     record = book.find(name)
 
     if record is None:
-        return "Contact not found."
+        raise KeyError("Contact not found.")
 
     if not address:
-        return "Enter an address."
+        raise ValueError("Enter an address.")
 
     record.add_address(address)
     return "Address updated."
 
 # Handler function to search contacts
-@input_error
 def search_contacts(args, book):
     if not args:
         return "Enter a search query."
@@ -210,10 +194,9 @@ def search_contacts(args, book):
 
 
 # Handler function to add a note
-@input_error
 def add_note(args, notes_book):
     if not args:
-        return "Enter note text."
+        raise ValueError("Enter note text.")
 
     text = " ".join(args)
     note_id = notes_book.add_note(text)
@@ -221,13 +204,11 @@ def add_note(args, notes_book):
 
 
 # Handler function to show all notes
-@input_error
 def show_notes(args, notes_book):
     return notes_book.show_all()
 
 
 # Handler function to search notes
-@input_error
 def search_notes(args, notes_book):
     if not args:
         return "Enter a search query."
@@ -237,10 +218,9 @@ def search_notes(args, notes_book):
 
 
 # Handler function to edit a note
-@input_error
 def edit_note(args, notes_book):
     if len(args) < 2:
-        return "Enter note ID and new text."
+        raise ValueError("Enter note ID and new text.")
 
     note_id = int(args[0])
     text = " ".join(args[1:])
@@ -248,19 +228,18 @@ def edit_note(args, notes_book):
     if notes_book.edit_note(note_id, text):
         return "Note updated."
 
-    return "Note not found."
+    raise ValueError("Note not found.")
 
 
 # Handler function to delete a note
-@input_error
 def delete_note(args, notes_book):
     if not args:
-        return "Enter note ID."
+        raise ValueError("Enter note ID.")
 
     note_id = int(args[0])
 
     if notes_book.delete_note(note_id):
         return "Note deleted."
 
-    return "Note not found."
+    raise ValueError("Note not found.")
 

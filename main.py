@@ -22,24 +22,22 @@ def main():
     print("Type 'help' to see available commands.")
 
     # Main loop for handling user commands
-    while True:
-        user_input = input("Enter a command: ").strip()
+    try:
+        while True:
+            user_input = input("Enter a command: ").strip()
 
-        if user_input.lower() in ["close", "exit"]:
-            try:
-                save_data(book, notes_book)
-                print("Data saved successfully.")
-            except (OSError, pickle.PickleError) as error:
-                print(f"Failed to save data: {error}")
+            if user_input.lower() in ["exit", "close"]:
+                print("Good bye!")
+                break
 
-            print("Good bye!")
-            break
-        
-        if user_input.lower() == "hello":
-            print("How can I help you?")
-            continue
+            if user_input.lower() == "hello":
+                print("How can I help you?")
+                continue
 
-        print(execute_command(user_input, commands))
+            print(execute_command(user_input, commands, book, notes_book))
+
+    except (KeyboardInterrupt, EOFError):
+        print("\nGood bye!")
 
 
 if __name__ == "__main__":

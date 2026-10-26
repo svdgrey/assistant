@@ -222,7 +222,15 @@ def create_commands(book, notes_book):
         "reset": {
             "description": "Reset all contacts and notes",
             "args": "",
+            "handler": None,
             "example": "reset",
+            "min_args": 0,
+        },
+        "data-path": {
+            "description": "Change the data storage directory",
+            "args": "",
+            "handler": None,
+            "example": "config data-path",
             "min_args": 0,
         },
     }

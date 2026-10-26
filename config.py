@@ -170,3 +170,20 @@ def recover_data_directory():
 
         else:
             print("Invalid choice.")
+
+
+# Save the selected data directory to configuration
+def set_data_directory(data_directory):
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+
+    config = {"data_directory": str(data_directory)}
+    temp_config = CONFIG_FILE.with_suffix(".tmp")
+
+    try:
+        with open(temp_config, "w", encoding="utf-8") as file:
+            json.dump(config, file, indent=4)
+
+        temp_config.replace(CONFIG_FILE)
+
+    finally:
+        temp_config.unlink(missing_ok=True)

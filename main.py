@@ -4,10 +4,10 @@
 import pickle
 
 from commands import create_commands, execute_command
-from config import recover_data_directory
+from config import get_data_directory, recover_data_directory
 from models import AddressBook
 from notes import NotesBook
-from storage import load_data, reset_data, get_data_file
+from storage import load_data, reset_data, get_data_file, change_data_directory
 
 
 # Ask the user to confirm a data reset
@@ -104,6 +104,27 @@ def main():
                         print(f"Failed to reset data: {error}")
                 else:
                     print("Reset cancelled.")
+
+                continue
+
+            if user_input.lower() == "data-path":
+                print(f"Current data directory: {get_data_directory()}")
+
+                try:
+                    new_path = input(
+                        "Enter new data directory (Enter to keep current): "
+                    ).strip()
+
+                    if not new_path:
+                        print("Data directory unchanged.")
+                    else:
+                        print(change_data_directory(new_path))
+
+                except (KeyboardInterrupt, EOFError):
+                    print("\nDirectory change cancelled.")
+
+                except (ValueError, OSError) as error:
+                    print(f"Failed to change data directory: {error}")
 
                 continue
 

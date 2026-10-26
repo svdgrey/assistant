@@ -304,6 +304,13 @@ def call_handler(command, args, book, notes_book):
     if command.get("autosave", False):
         try:
             save_data(book, notes_book)
+        except FileNotFoundError as error:
+            return (
+                f"{result}\n"
+                f"Warning: Data directory not found: {error}\n"
+                "Changes are not saved. Please restore the data directory."
+            )
+
         except (OSError, pickle.PickleError) as error:
             return f"{result}\nWarning: Data saving failed: {error}"
 

@@ -4,6 +4,7 @@
 import pickle
 
 from commands import create_commands, execute_command
+from config import recover_data_directory
 from models import AddressBook
 from notes import NotesBook
 from storage import load_data, reset_data, get_data_file
@@ -11,43 +12,73 @@ from storage import load_data, reset_data, get_data_file
 
 # Ask the user to confirm a data reset
 def confirm_reset():
-    while True:
-        answer = input("Reset all data? [yes/No]: ").strip().lower()
+    try:
+        while True:
+            answer = input("Reset all data? [yes/No]: ").strip().lower()
 
-        if answer == "yes":
-            return True
+            if answer == "yes":
+                return True
 
-        if answer in ("no", ""):
-            return False
+            if answer in ("no", ""):
+                return False
 
-        print("Please enter yes or no.")
+            print("Please enter yes or no.")
+
+    except (KeyboardInterrupt, EOFError):
+        print()
+        return False
 
 
 def main():
+    print("Welcome to the assistant bot!")
 
-    try:
-        book, notes_book = load_data()
-    except (RuntimeError, OSError) as error:
-        print(f"Failed to load data: {error}")
-
-        if not confirm_reset():
-            print("Reset cancelled.")
-            return
-
-        book = AddressBook()
-        notes_book = NotesBook()
-
+    # Load data and handle startup errors
+    while True:
         try:
-            reset_data(book, notes_book)
-        except (OSError, pickle.PickleError) as error:
-            print(f"Failed to reset data: {error}")
-            return
+            book, notes_book = load_data()
+            break
 
-        print("Data reset successfully.")
+        except FileNotFoundError as error:
+            print(f"Data directory error: {error}")
+
+            try:
+                recovered = recover_data_directory()
+            except (KeyboardInterrupt, EOFError):
+                print("\nGood bye!")
+                return
+
+            if not recovered:
+                print("Good bye!")
+                return
+
+            # Try loading data again
+            continue
+
+        except RuntimeError as error:
+            print(f"Failed to load data: {error}")
+
+            if not confirm_reset():
+                print("Reset cancelled.")
+                return
+
+            book = AddressBook()
+            notes_book = NotesBook()
+
+            try:
+                reset_data(book, notes_book)
+            except (OSError, pickle.PickleError) as error:
+                print(f"Failed to reset data: {error}")
+                return
+
+            print("Data reset successfully.")
+            break
+
+        except OSError as error:
+            print(f"Failed to access data: {error}")
+            return
 
     commands = create_commands(book, notes_book)
 
-    print("Welcome to the assistant bot!")
     print(f"Data file: {get_data_file()}")
     print("Type 'help' to see available commands.")
 
@@ -69,7 +100,7 @@ def main():
                     try:
                         reset_data(book, notes_book)
                         print("Data reset successfully.")
-                    except OSError as error:
+                    except (OSError, pickle.PickleError) as error:
                         print(f"Failed to reset data: {error}")
                 else:
                     print("Reset cancelled.")

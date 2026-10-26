@@ -8,8 +8,8 @@ import pickle
 from pathlib import Path
 from models import AddressBook
 from notes import NotesBook
-from config import get_data_directory
 from datetime import datetime
+from config import get_data_directory, set_data_directory, validate_data_path
 
 DATA_FILENAME = "assistant_data.pkl"
 BACKUP_SUFFIX = ".bak"
@@ -193,3 +193,37 @@ def reset_data(book, notes_book):
     book.data.clear()
     notes_book.notes.clear()
     notes_book.next_id = 1
+
+
+
+# Copy application data to a new directory
+def change_data_directory(user_path):
+    old_directory = get_data_directory()
+    new_directory = validate_data_path(user_path)
+
+    if new_directory == old_directory:
+        return "This directory is already in use."
+
+    data_file = new_directory / DATA_FILENAME
+    backup_file = new_directory / (DATA_FILENAME + BACKUP_SUFFIX)
+
+    # Do not overwrite existing data
+    if data_file.exists() or backup_file.exists():
+        raise FileExistsError(
+            "The selected directory already contains assistant data."
+        )
+
+    new_directory.mkdir(parents=True, exist_ok=True)
+
+    # Copy existing files to the new directory
+    for source_file in (get_data_file(), get_backup_file()):
+        if source_file.exists():
+            shutil.copy2(
+                source_file,
+                new_directory / source_file.name
+            )
+
+    # Update configuration only after successful copying
+    set_data_directory(new_directory)
+
+    return f"Data directory changed to: {new_directory}"

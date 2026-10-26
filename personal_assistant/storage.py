@@ -6,10 +6,10 @@ import os
 import shutil
 import pickle
 from pathlib import Path
-from models import AddressBook
-from notes import NotesBook
+from .models import AddressBook
+from .notes import NotesBook
 from datetime import datetime
-from config import get_data_directory, set_data_directory, validate_data_path
+from .config import get_data_directory, set_data_directory, validate_data_path
 
 DATA_FILENAME = "assistant_data.pkl"
 BACKUP_SUFFIX = ".bak"

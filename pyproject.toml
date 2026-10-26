@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "assistant"
+version = "1.0.1"
+authors = [
+    {name = "Serhii Duzhnikov", email = "grey.dev@gmail.com"}
+]
+description = "A console application for managing contacts and notes. Python Programming: Foundtion and Best Practicies 2.0 Final Project"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["platformdirs"]
+
+[project.scripts]
+assistant = "personal_assistant.main:main"
+
+[tool.setuptools]
+packages = ["personal_assistant"]

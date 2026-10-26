@@ -1,5 +1,5 @@
 # Handlers module provides functions to handle various commands for the assistant bot
-from models import Record
+from .models import Record
 
 # Function to parse user input into command and arguments
 def parse_input(user_input):

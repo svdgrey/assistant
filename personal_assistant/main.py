@@ -3,11 +3,11 @@
 
 import pickle
 
-from commands import create_commands, execute_command
-from config import get_data_directory, recover_data_directory
-from models import AddressBook
-from notes import NotesBook
-from storage import load_data, reset_data, get_data_file, change_data_directory
+from .commands import create_commands, execute_command
+from .config import get_data_directory, recover_data_directory
+from .models import AddressBook
+from .notes import NotesBook
+from .storage import load_data, reset_data, get_data_file, change_data_directory
 
 
 # Ask the user to confirm a data reset

@@ -1,9 +1,9 @@
 # Commands module defines the structure of available commands for the assistant bot
 # It includes command descriptions, argument requirements, and associated handlers
 
-import handlers
+from . import handlers
 import pickle
-from storage import save_data
+from .storage import save_data
 
 # Function to create the command structure for the assistant bot
 # It takes the address book and notes book as arguments and returns a dictionary of commands
